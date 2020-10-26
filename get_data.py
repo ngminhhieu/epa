@@ -32,9 +32,9 @@ main_df = pandas.DataFrame(columns=['date_local', 'time_local'])
 statistic = []
 
 for index_county in range(len(county)):
+    column_name = 'county_' + str(index_county+1)
+    df = pandas.DataFrame(columns=[column_name])
     for index_date in range(len(bdate)):
-        column_name = 'county_' + str(index_county+1)
-        df = pandas.DataFrame(columns=[column_name])
         PARAMS = {
             'email': email,
             'key': key,
@@ -63,7 +63,8 @@ for index_county in range(len(county)):
                                 + "\Rows: " + str(data['Header'][0]['rows']))
                 wr = csv.writer(result_file, dialect='excel')
                 wr.writerows([statistic[-1]])
-        if(len(main_df) > 0):
-            main_df = main_df.join(df)
+                
+    if(len(main_df) > 0):
+        main_df = main_df.join(df)
 
 main_df.to_csv('result.csv')
