@@ -9,8 +9,17 @@ URL = "https://aqs.epa.gov/data/api/sampleData/byCounty"
 email = "hieu.nm151338@sis.hust.edu.vn"
 key = "saffronbird49"
 param = 88101
-state = [x for x in range(1,321,2)]
-county = 183
+county = []
+numeric_county = [x for x in range(1,321,2)]
+for i in range(len(numeric_county)):
+    x = numeric_county[i]
+    if x > 0 and x < 10:
+        county.append("00"+str(x))
+    elif x >= 10 and x<100:
+        county.append("0"+str(x))
+    else:
+        county.append(str(x))
+state = 37
 
 edate = []
 bdate = []
@@ -18,28 +27,43 @@ for i in range(10):
     bdate.append(20100101 + 10000*i)
     edate.append(20101231 + 10000*i)
 
-df = pandas.DataFrame(columns=['date_local', 'time_local', 'sample_measurement'])
+main_df = pandas.DataFrame(columns=['date_local', 'time_local'])
 
-for i in range(len(bdate)):
-    print(i)
-    PARAMS = {
-    'email': email,
-    'key': key,
-    'param': param,
-    'bdate': bdate[i],
-    'edate': edate[i],
-    'state': state,
-    'county': county
-    }
+statistic = []
 
-    r = requests.get(url=URL, params=PARAMS)
-    data = r.json()
-    main_data = data['Data']
-    for j in range(len(main_data)):
-        print(j)
-        df = df.append({'date_local': main_data[j]['date_local'],
-                        'time_local': main_data[j]['time_local'],
-                        'sample_measurement': main_data[j]['sample_measurement']
-                        }, ignore_index=True)
+for index_county in range(len(county)):
+    for index_date in range(len(bdate)):
+        column_name = 'county_' + str(index_county+1)
+        df = pandas.DataFrame(columns=[column_name])
+        PARAMS = {
+            'email': email,
+            'key': key,
+            'param': param,
+            'bdate': bdate[index_date],
+            'edate': edate[index_date],
+            'state': state,
+            'county': county[index_county]
+        }
 
-df.to_csv('test.csv')
+        r = requests.get(url=URL, params=PARAMS)
+        data = r.json()
+        main_data = data['Data']
+        for index_data in range(len(main_data)):
+            df = df.append({column_name: main_data[index_data]['sample_measurement']}, ignore_index=True)
+            
+        if (len(main_df) == 0):
+            for index_data in range(len(main_data)):
+                main_df = main_df.append({'date_local': main_data[index_data]['date_local'],
+                                'time_local': main_data[index_data]['time_local']}, ignore_index=True)
+        if(data['Header'][0]['rows']!=0):
+            with open('statistic.csv','w+') as result_file:
+                
+                statistic.append("Year: " + str(bdate[index_date])
+                                + "\County code: " + str(county[index_county])
+                                + "\Rows: " + str(data['Header'][0]['rows']))
+                wr = csv.writer(result_file, dialect='excel')
+                wr.writerows([statistic[-1]])
+        if(len(main_df) > 0):
+            main_df = main_df.join(df)
+
+main_df.to_csv('result.csv')
