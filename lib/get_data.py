@@ -67,4 +67,4 @@ for index_county in range(len(county)):
     if(len(main_df) > 0):
         main_df = main_df.join(df)
 
-main_df.to_csv('result.csv')
+main_df.to_csv('data/csv/result.csv')
