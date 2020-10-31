@@ -105,4 +105,3 @@ venv.bak/
 
 *.nc
 *.npz
-!data/conv2d_gsmap/npz/gauge_data.npz
